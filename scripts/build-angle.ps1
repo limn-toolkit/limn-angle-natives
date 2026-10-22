@@ -77,10 +77,14 @@ $bash = "$env:ProgramFiles\Git\bin\bash.exe"
 foreach ($slice in $Arch) {
     $out = "out\windows-$slice"
     Write-Host "- building ANGLE $AngleBranch ($AngleCommit) for windows-$slice"
-    $gnArgs = (& $bash "$($Root -replace '\\','/')/scripts/gn-args.sh" windows $slice) -join " "
+    # Written to args.gn rather than passed as --args: Windows PowerShell 5.1 strips the quotes
+    # inside an argument it hands a native program, and target_cpu="arm64" arrives as arm64.
+    $gnArgs = (& $bash "$($Root -replace '\\','/')/scripts/gn-args.sh" windows $slice)
+    New-Item -ItemType Directory -Force "$Angle\$out" | Out-Null
+    [System.IO.File]::WriteAllLines("$Angle\$out\args.gn", [string[]]$gnArgs)
     Push-Location $Angle
     try {
-        Run gn.bat @("gen", $out, "--args=$gnArgs")
+        Run gn.bat @("gen", $out)
         Run autoninja.bat @("-C", $out, "libEGL", "libGLESv2")
     } finally { Pop-Location }
 
