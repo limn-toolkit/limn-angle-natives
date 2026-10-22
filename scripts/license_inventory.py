@@ -32,8 +32,17 @@ SOURCE = re.compile(r"(?:^|\s)(?:-c|/c|/Tp|/Tc)\s*(\S+\.(?:c|cc|cpp|cxx|m|mm))(?
 LICENCE_FILES = ("LICENSE", "LICENSE.txt", "LICENSE.md", "COPYING", "COPYING.txt", "NOTICE")
 
 
+def ninja():
+    """The ninja ANGLE's checkout carries: depot_tools' own is a script, a batch file on Windows."""
+    for name in ("ninja.exe", "ninja"):
+        candidate = os.path.join("third_party", "ninja", name)
+        if os.path.isfile(candidate):
+            return os.path.abspath(candidate)
+    return "ninja"
+
+
 def compiled_sources(out_dir, targets):
-    commands = subprocess.run(["ninja", "-C", out_dir, "-t", "commands", *targets],
+    commands = subprocess.run([ninja(), "-C", out_dir, "-t", "commands", *targets],
                               check=True, capture_output=True, text=True).stdout
     files = set()
     for line in commands.splitlines():
