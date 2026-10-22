@@ -1,3 +1,5 @@
+# ASCII only: Windows PowerShell 5.1 reads a script without a byte-order mark as the ANSI code page.
+#
 # Builds ANGLE's libEGL.dll and libGLESv2.dll for Windows, OpenGL ES over Direct3D 11 and nothing
 # else, from the commit angle.pin names, with ANGLE's own build, and stages them where the jars are
 # packed from:
@@ -74,7 +76,7 @@ $bash = "$env:ProgramFiles\Git\bin\bash.exe"
 
 foreach ($slice in $Arch) {
     $out = "out\windows-$slice"
-    Write-Host "· building ANGLE $AngleBranch ($AngleCommit) for windows-$slice"
+    Write-Host "- building ANGLE $AngleBranch ($AngleCommit) for windows-$slice"
     $gnArgs = (& $bash "$($Root -replace '\\','/')/scripts/gn-args.sh" windows $slice) -join " "
     Push-Location $Angle
     try {
@@ -98,7 +100,7 @@ foreach ($slice in $Arch) {
                 throw "$lib imports $import, which a library on Maven Central cannot count on or must not need"
             }
         }
-        Write-Host "✓ $lib`: $machine, imports $($imports -join ', ')"
+        Write-Host "ok $lib`: $machine, imports $($imports -join ', ')"
     }
 
     Push-Location $Angle
