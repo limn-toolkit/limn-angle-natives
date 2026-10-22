@@ -70,7 +70,9 @@ try {
 } finally { Pop-Location }
 
 Copy-Item "$Angle\LICENSE" "$Dist\LICENSE-angle.txt"
-$readobj = "$Angle\third_party\llvm-build\Release+Asserts\bin\llvm-readobj.exe"
+# Visual Studio's dumpbin, for the host this runs on: ANGLE's own clang ships no object reader.
+$hostTools = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "Hostarm64\arm64" } else { "Hostx64\x64" }
+$dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\$hostTools\dumpbin.exe" | Select-Object -Last 1 -ExpandProperty FullName
 # Git's bash by its path: a bare "bash" can resolve to the WSL launcher in System32.
 $bash = "$env:ProgramFiles\Git\bin\bash.exe"
 
@@ -93,12 +95,13 @@ foreach ($slice in $Arch) {
     New-Item -ItemType Directory -Force $stage | Out-Null
     Copy-Item "$Angle\$out\libEGL.dll", "$Angle\$out\libGLESv2.dll" $stage
 
-    $machine = if ($slice -eq "aarch64") { "ARM64" } else { "AMD64" }
+    # The machine field's code, which dumpbin prints the same in every display language.
+    $machine = if ($slice -eq "aarch64") { "AA64" } else { "8664" }
     foreach ($lib in "libEGL.dll", "libGLESv2.dll") {
         $file = "$stage\$lib"
-        $headers = & $readobj --file-headers $file | Out-String
-        if ($headers -notmatch "IMAGE_FILE_MACHINE_$machine") { throw "$file is not $machine" }
-        $imports = & $readobj --coff-imports $file | Select-String "Name: (\S+\.dll)" | ForEach-Object { $_.Matches[0].Groups[1].Value }
+        $headers = & $dumpbin /nologo /headers $file | Out-String
+        if ($headers -notmatch "\b$machine\b") { throw "$file is not machine $machine" }
+        $imports = & $dumpbin /nologo /dependents $file | Where-Object { $_ -match '^\s+(\S+\.dll)\s*$' } | ForEach-Object { $matches[1] }
         foreach ($import in $imports) {
             if ($import -match "^(vcruntime|msvcp|ucrtbase|api-ms-win-crt-)" -or $import -match "^(d3d9|z|libz)\.dll$") {
                 throw "$lib imports $import, which a library on Maven Central cannot count on or must not need"
