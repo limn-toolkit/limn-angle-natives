@@ -1,0 +1,17 @@
+# What this repository builds, written once and read by everything that needs it: the two build
+# scripts, build.gradle.kts and the publish workflow.
+#
+# ANGLE comes from its own repository at one commit, built with its own build (gn and ninja,
+# through depot_tools), not from a third party's recipe: that is how the other payloads of the
+# toolkit are made (lunasvg and FFmpeg from their pinned sources), and it lets the build leave out
+# every backend Limn does not use.
+#
+# ANGLE_BRANCH is the Chromium release branch the commit is the head of, and the third component of
+# this repository's version (2.1.<branch>.<n>): ANGLE's own version is 2.1, and which branch it was
+# taken from is what tells two builds apart. Chosen on 2026-10-22 as the Chromium release branch
+# that was stable that day (milestone 156).
+ANGLE_BRANCH=8078
+ANGLE_COMMIT=9fe55a5adc2a9a9d6ab60af70f69ee847a6418a1
+# The tools that fetch ANGLE's dependencies at the revisions its DEPS file names. Pinned too, and
+# kept from updating itself, so that a rebuild of the same commit fetches the same things.
+DEPOT_TOOLS_COMMIT=b1c2e86792a7f2b6576c181b7327ddd53b1a42a8

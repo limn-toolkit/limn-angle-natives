@@ -1,0 +1,72 @@
+# Builds this repository's payload — ANGLE's libEGL and libGLESv2, OpenGL ES over Direct3D 11 for
+# Windows and over Metal for macOS, on x86_64 and aarch64 — and hands it back as artifacts. Nothing
+# here is committed: the binaries exist for the length of a run and travel into the jars the release
+# publishes.
+#
+# The scripts do the work, with ANGLE's own build at the commit angle.pin names; this file only
+# supplies each platform the machine it builds on:
+#
+#   macOS      one job, both slices, from an Apple Silicon runner (`--arch arm64,x86_64`).
+#   Windows    one job, both slices, from an x64 runner: the arm64 slice is cross-compiled, which
+#              is how ANGLE's build makes it, and tested on a native arm64 runner in ci.yml.
+#
+# Every slice's inventory of the sources compiled into it, with each licence, is made by the same
+# run and refused there if a licence is not one a library may redistribute.
+#
+# Reusable (`workflow_call`) so the release calls it and its artifacts land in the same run, and
+# dispatchable on its own.
+
+name: natives
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    runs-on: macos-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build ANGLE
+        run: bash scripts/build-angle.sh --arch arm64,x86_64
+
+      - name: Show what was produced
+        run: ls -lR native/dist
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: angle-native-macos
+          path: native/dist/
+          if-no-files-found: error
+          retention-days: 3
+
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 300
+    steps:
+      # ANGLE's checkout has paths deeper than Windows' default limit, and a working directory near
+      # the root of the drive keeps them short.
+      - name: Long paths
+        run: git config --global core.longpaths true
+
+      - uses: actions/checkout@v7
+
+      - name: Build ANGLE
+        shell: pwsh
+        run: ./scripts/build-angle.ps1 -Arch x86_64,aarch64
+
+      - name: Show what was produced
+        shell: pwsh
+        run: Get-ChildItem -Recurse native/dist | Select-Object FullName, Length
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: angle-native-windows
+          path: native/dist/
+          if-no-files-found: error
+          retention-days: 3
