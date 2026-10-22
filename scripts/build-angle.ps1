@@ -61,7 +61,8 @@ Run git @("-C", $Angle, "checkout", "-q", "--", ".")
 Get-ChildItem "$Root\patches\*.patch" | ForEach-Object { Run git @("-C", $Angle, "apply", $_.FullName) }
 Push-Location $Angle
 try {
-    if (-not (Test-Path ".gclient")) { Run python @("scripts\bootstrap.py") }
+    # depot_tools' own Python, which its bootstrap installed: no Python of the machine's is needed.
+    if (-not (Test-Path ".gclient")) { Run python3.bat @("scripts\bootstrap.py") }
     Run gclient.bat @("sync", "--no-history", "--shallow", "--nohooks", "-j", "8")
     Run gclient.bat @("runhooks")
 } finally { Pop-Location }
@@ -101,7 +102,7 @@ foreach ($slice in $Arch) {
     }
 
     Push-Location $Angle
-    try { Run python @("$Root\scripts\license_inventory.py", ".", $out, "$stage\THIRD_PARTY.txt", "libEGL", "libGLESv2") }
+    try { Run python3.bat @("$Root\scripts\license_inventory.py", ".", $out, "$stage\THIRD_PARTY.txt", "libEGL", "libGLESv2") }
     finally { Pop-Location }
 
     $position = (Select-String -Path "$Angle\$out\gen\angle\angle_commit.h" -Pattern "ANGLE_COMMIT_POSITION (\d+)" -ErrorAction SilentlyContinue).Matches | Select-Object -First 1
