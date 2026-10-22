@@ -8,7 +8,8 @@
 #
 # What is built is the smallest ANGLE that gives Limn an OpenGL ES 3.0 context: the one backend the
 # platform needs (Direct3D 11 on Windows, Metal on macOS) and nothing else: no Vulkan, no desktop
-# OpenGL backend, no SwiftShader, no WebGPU, no OpenCL, no null backend, no tests, no capture.
+# OpenGL backend, no SwiftShader, no WebGPU, no OpenCL, no null backend, no tests, no capture, and
+# no Perfetto tracing (which also brought protobuf, and a licence field the inventory refused).
 
 set -euo pipefail
 
@@ -35,6 +36,7 @@ angle_enable_vulkan=false
 angle_enable_swiftshader=false
 angle_enable_wgpu=false
 angle_enable_null=false
+angle_enable_perfetto=false
 ARGS
 
 case "$os" in

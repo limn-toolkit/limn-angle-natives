@@ -205,6 +205,7 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
 tasks.named<Jar>("sourcesJar") {
     exclude("limn/angle/native/**")
     from("scripts") { into("scripts") }
+    from("patches") { into("patches") }
     from("angle.pin")
 }
 

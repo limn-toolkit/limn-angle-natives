@@ -46,6 +46,8 @@ if (-not (Test-Path "$Work\depot_tools\.git")) {
 Run git @("-C", "$Work\depot_tools", "fetch", "-q", "origin", $DepotToolsCommit)
 Run git @("-C", "$Work\depot_tools", "checkout", "-q", $DepotToolsCommit)
 $env:PATH = "$Work\depot_tools;$env:PATH"
+# The python and the tools depot_tools runs on; with its self-update off, nothing else installs them.
+Run "$Work\depot_tools\bootstrap\win_tools.bat" @()
 
 $Angle = "$Work\angle"
 if (-not (Test-Path "$Angle\.git")) {
@@ -54,6 +56,9 @@ if (-not (Test-Path "$Angle\.git")) {
 }
 Run git @("-C", $Angle, "fetch", "-q", "--depth", "1", "origin", $AngleCommit)
 Run git @("-C", $Angle, "checkout", "-q", $AngleCommit)
+# This repository's changes to ANGLE, each with its reason at the top, on a clean tree every time.
+Run git @("-C", $Angle, "checkout", "-q", "--", ".")
+Get-ChildItem "$Root\patches\*.patch" | ForEach-Object { Run git @("-C", $Angle, "apply", $_.FullName) }
 Push-Location $Angle
 try {
     if (-not (Test-Path ".gclient")) { Run python @("scripts\bootstrap.py") }

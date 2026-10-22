@@ -12,7 +12,8 @@
 # Windows is scripts/build-angle.ps1; the arguments both use are scripts/gn-args.sh.
 #
 # Hours of CPU and several gigabytes of checkout on a first run: this is what the natives workflow
-# runs on GitHub's runners, and not something to start on a laptop without meaning to.
+# runs on GitHub's runners, and not something to start on a laptop without meaning to. On one,
+# NINJA_JOBS=<n> and `nice` keep the machine usable while it runs.
 #
 # What the toolkit's loader needs of a macOS library, and this script makes true and then checks:
 #   - an install name that is the bare file name (libEGL.dylib, libGLESv2.dylib): the windowing
@@ -50,6 +51,8 @@ fi
 git -C "$WORK/depot_tools" fetch -q origin "$DEPOT_TOOLS_COMMIT"
 git -C "$WORK/depot_tools" checkout -q "$DEPOT_TOOLS_COMMIT"
 export PATH="$WORK/depot_tools:$PATH"
+# The python and the tools depot_tools runs on; with its self-update off, nothing else installs them.
+"$WORK/depot_tools/ensure_bootstrap"
 
 # ANGLE at its pin, and its dependencies at the revisions its DEPS names.
 ANGLE="$WORK/angle"
@@ -59,6 +62,11 @@ if [ ! -d "$ANGLE/.git" ]; then
 fi
 git -C "$ANGLE" fetch -q --depth 1 origin "$ANGLE_COMMIT"
 git -C "$ANGLE" checkout -q "$ANGLE_COMMIT"
+# This repository's changes to ANGLE, each with its reason at the top, on a clean tree every time.
+git -C "$ANGLE" checkout -q -- .
+for patch in "$ROOT"/patches/*.patch; do
+  git -C "$ANGLE" apply "$patch"
+done
 ( cd "$ANGLE" && [ -f .gclient ] || python3 scripts/bootstrap.py )
 ( cd "$ANGLE" && gclient sync --no-history --shallow --nohooks -j 8 && gclient runhooks )
 
@@ -73,7 +81,7 @@ for arch in ${ARCHS//,/ }; do
   out="out/macos-$slice"
   echo "· building ANGLE $ANGLE_BRANCH ($ANGLE_COMMIT) for macos-$slice"
   ( cd "$ANGLE" && gn gen "$out" --args="$(bash "$ROOT/scripts/gn-args.sh" macos "$slice" | tr '\n' ' ')" \
-      && autoninja -C "$out" libEGL libGLESv2 )
+      && autoninja ${NINJA_JOBS:+-j "$NINJA_JOBS"} -C "$out" libEGL libGLESv2 )
 
   stage="$DIST/macos-$slice"
   rm -rf "$stage"; mkdir -p "$stage"

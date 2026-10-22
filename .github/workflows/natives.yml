@@ -32,6 +32,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Xcode 26 ships the Metal compiler as a component of its own, and ANGLE's build compiles its
+      # internal Metal shaders ahead of time whenever it builds for the machine it runs on.
+      - name: Metal toolchain
+        run: xcodebuild -downloadComponent MetalToolchain
+
       - name: Build ANGLE
         run: bash scripts/build-angle.sh --arch arm64,x86_64
 

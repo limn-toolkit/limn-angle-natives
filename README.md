@@ -41,5 +41,6 @@ pwsh scripts/build-angle.ps1 -Arch x86_64,aarch64   # Windows
 bash scripts/rehearse-consumer.sh                   # resolve the jars as a consumer would
 ```
 
-A first build fetches several gigabytes and takes hours of CPU; the `natives` workflow is where it
+On macOS the build needs Xcode's Metal toolchain (`xcodebuild -downloadComponent MetalToolchain`
+on Xcode 26 and later). A first build fetches several gigabytes and takes hours of CPU; the `natives` workflow is where it
 is meant to run. See [RELEASING.md](RELEASING.md) for releases.
