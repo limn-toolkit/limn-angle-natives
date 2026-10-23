@@ -39,13 +39,21 @@ jobs:
           VERSION="$(sed -n 's/^limn-angle-natives[[:space:]]*=[[:space:]]*//p' versions.properties | tr -d '[:space:]')"
           TAG="v$VERSION"
           if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "· $TAG already on origin (bump versions.properties for a new release)"
-            exit 0
+            # A tag whose publish never started (the dispatch below failed after the push, as the
+            # first release's did while publish.yml was not yet on the default branch) is started
+            # again by re-running this workflow; any publish run on the tag, whatever its outcome,
+            # means it did start, and a failed one is re-run from its own page.
+            if [ -n "$(gh run list --workflow publish.yml --branch "$TAG" --limit 1 --json databaseId -q '.[0].databaseId')" ]; then
+              echo "· $TAG already on origin (bump versions.properties for a new release)"
+              exit 0
+            fi
+            echo "· $TAG is on origin but no publish ever ran on it: starting it"
+          else
+            git tag -a "$TAG" -m "limn-angle-natives $VERSION"
+            git push origin "refs/tags/$TAG"
           fi
-          git tag -a "$TAG" -m "limn-angle-natives $VERSION"
-          git push origin "refs/tags/$TAG"
           gh workflow run publish.yml --ref "$TAG" -f version="$VERSION"
-          echo "✚ $TAG created at $GITHUB_SHA; publish dispatched"
+          echo "✚ $TAG at $GITHUB_SHA; publish dispatched"
           {
             echo "### Tagged and dispatched $TAG"
             echo ""
