@@ -21,6 +21,13 @@ Central keeps what it accepts), uploads the signed bundle, and drafts the GitHub
 Nothing publishes itself: the deployment sits staged on the Central Portal until somebody presses
 **Publish**, and the GitHub release is a draft.
 
+## Trying a change before main
+
+A push to `main` tags and publishes when `versions.properties` names a version without a tag, so a
+change to the build is tried on a branch first: push the branch, then Actions → **ci** → Run
+workflow on it. The repository's first push was such a branch (`first-build`), for the same reason:
+`main` arriving first would have published a build no runner had made yet.
+
 ## Moving ANGLE
 
 A new branch is a reason, not a routine: the toolkit compiles only its own shaders, so most of

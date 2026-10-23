@@ -2,6 +2,9 @@
 # machine of its own platform and architecture (an OpenGL ES 3.0 context, the extensions the
 # toolkit's capability gates need, a draw read back, and on macOS the IOSurface binding), package,
 # and rehearse a consumer resolving the jars. Nothing is published.
+#
+# A branch that is not main runs it by hand (Actions -> ci -> Run workflow), which is how a change
+# to the build is tried before main, where a bumped versions.properties is a release.
 
 name: ci
 
