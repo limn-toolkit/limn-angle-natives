@@ -16,7 +16,7 @@ An application does not name this artifact: the toolkit's backend does, and load
 machines that need it — a Windows machine with no OpenGL driver, or one older than 3.3, and a Mac
 with no accelerated OpenGL renderer or no OpenGL at all. Everywhere else the libraries are never
 loaded. Linux has no classifier, because Mesa already gives every Linux machine an OpenGL the
-toolkit runs on. See the toolkit's ADR 003 for why, and ADR 078 for this repository.
+toolkit runs on. See the toolkit's ADR 003 for why, and ADR 080 for this repository.
 
 ## Versions
 
