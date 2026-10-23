@@ -42,5 +42,7 @@ bash scripts/rehearse-consumer.sh                   # resolve the jars as a cons
 ```
 
 On macOS the build needs Xcode's Metal toolchain (`xcodebuild -downloadComponent MetalToolchain`
-on Xcode 26 and later). A first build fetches several gigabytes and takes hours of CPU; the `natives` workflow is where it
+on Xcode 26 and later). On Windows it needs Visual Studio's C++ tools for x64 and arm64 and the
+Windows SDK the pinned ANGLE names, with its debuggers for both CPUs, which
+`scripts/install-windows-sdk.ps1` installs from an elevated shell. A first build fetches several gigabytes and takes hours of CPU; the `natives` workflow is where it
 is meant to run. See [RELEASING.md](RELEASING.md) for releases.

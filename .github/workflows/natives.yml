@@ -61,6 +61,12 @@ jobs:
 
       - uses: actions/checkout@v7
 
+      # The runner's image has Visual Studio but an older Windows SDK than the pinned ANGLE's build
+      # accepts, and only the host's debuggers, which the build copies for every CPU it targets.
+      - name: Windows SDK
+        shell: pwsh
+        run: ./scripts/install-windows-sdk.ps1
+
       - name: Build ANGLE
         shell: pwsh
         run: ./scripts/build-angle.ps1 -Arch x86_64,aarch64
